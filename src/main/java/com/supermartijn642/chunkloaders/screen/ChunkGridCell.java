@@ -1,5 +1,6 @@
 package com.supermartijn642.chunkloaders.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.supermartijn642.chunkloaders.ChunkLoaders;
@@ -12,7 +13,6 @@ import com.supermartijn642.core.gui.widget.BaseWidget;
 import com.supermartijn642.core.gui.widget.WidgetRenderContext;
 import com.supermartijn642.core.gui.widget.premade.AbstractButtonWidget;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -147,7 +147,7 @@ public class ChunkGridCell extends BaseWidget {
                 .forEach(tooltips::add);
             if(tooltips.size() > (canToggleChunk ? 1 : 0))
                 tooltips.add(canToggleChunk ? 1 : 0, TextComponents.translation("chunkloaders.gui.chunk.others").color(ChatFormatting.WHITE).get());
-            if(!ClientUtils.getPlayer().getUUID().equals(this.player) && ClientUtils.getPlayer().hasPermissions(2) && !Screen.hasShiftDown()
+            if(!ClientUtils.getPlayer().getUUID().equals(this.player) && ClientUtils.getPlayer().hasPermissions(2) && !isShiftDown()
                 && (this.isWithinRange.apply(0, 0) || this.isLoaded.apply(0, 0))){
                 Component keyName = TextComponents.translation("key.keyboard.left.shift").color(ChatFormatting.GOLD).get();
                 tooltips.add(TextComponents.translation("chunkloaders.gui.chunk.overwrite", keyName).color(ChatFormatting.WHITE).get());
@@ -165,8 +165,13 @@ public class ChunkGridCell extends BaseWidget {
 
     private boolean canPlayerToggleChunk(){
         Player player = ClientUtils.getPlayer();
-        return (player.getUUID().equals(this.player) || (player.hasPermissions(2) && Screen.hasShiftDown()))
+        return (player.getUUID().equals(this.player) || (player.hasPermissions(2) && isShiftDown()))
             && (this.isWithinRange.apply(0, 0) || this.isLoaded.apply(0, 0));
+    }
+
+    private static boolean isShiftDown(){
+        return InputConstants.isKeyDown(ClientUtils.getMinecraft().getWindow(), InputConstants.KEY_LSHIFT)
+            || InputConstants.isKeyDown(ClientUtils.getMinecraft().getWindow(), InputConstants.KEY_RSHIFT);
     }
 
     public boolean isLoaded(){

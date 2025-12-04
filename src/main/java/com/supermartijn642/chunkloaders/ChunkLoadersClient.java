@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 
@@ -19,6 +20,7 @@ import net.minecraft.world.level.ChunkPos;
 public class ChunkLoadersClient implements ClientModInitializer {
 
     private static KeyMapping CHUNK_LOADING_SCREEN_KEY;
+    private static final KeyMapping.Category CHUNKLOADERS_CATEGORY = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("chunkloaders", "keys"));
 
     @Override
     public void onInitializeClient(){
@@ -27,7 +29,7 @@ public class ChunkLoadersClient implements ClientModInitializer {
             handler.registerCustomBlockEntityRenderer(type::getBlockEntityType, () -> new ChunkLoaderBlockEntityRenderer(type.getBlock(), type.getFullRotation()));
 
         // Register key to open chunk loader screen
-        CHUNK_LOADING_SCREEN_KEY = new KeyMapping("chunkloaders.keys.open_screen", 67/*'c'*/, "chunkloaders.keys.category");
+        CHUNK_LOADING_SCREEN_KEY = new KeyMapping("chunkloaders.keys.open_screen", 67/*'c'*/, CHUNKLOADERS_CATEGORY);
         KeyBindingHelper.registerKeyBinding(CHUNK_LOADING_SCREEN_KEY);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while(CHUNK_LOADING_SCREEN_KEY.consumeClick())

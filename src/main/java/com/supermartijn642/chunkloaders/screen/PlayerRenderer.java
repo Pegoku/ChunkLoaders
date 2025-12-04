@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,14 +34,18 @@ public class PlayerRenderer {
 
     public static String getPlayerUsername(UUID player){
         GameProfile profile = fetchPlayerProfile(player);
-        return profile == null ? null : profile.getName();
+        return profile == null ? null : profile.name();
     }
 
     public static ResourceLocation getPlayerSkin(UUID player){
         GameProfile profile = fetchPlayerProfile(player);
-        if(profile != null)
-            return ClientUtils.getMinecraft().getSkinManager().getInsecureSkin(profile).texture();
-        return DefaultPlayerSkin.get(player).texture();
+        if(profile != null){
+            var skinFuture = ClientUtils.getMinecraft().getSkinManager().get(profile);
+            var skinOptional = skinFuture.getNow(java.util.Optional.empty());
+            if(skinOptional.isPresent())
+                return skinOptional.get().body().texturePath();
+        }
+        return DefaultPlayerSkin.get(player).body().texturePath();
     }
 
     private static GameProfile fetchPlayerProfile(final UUID player){
@@ -85,9 +88,9 @@ public class PlayerRenderer {
 
     @Nullable
     private static GameProfile updateGameProfile(@Nullable GameProfile input){
-        if(input != null && input.getId() != null){
+        if(input != null && input.id() != null){
             MinecraftSessionService sessionService = getSessionService();
-            ProfileResult fetchResult = sessionService.fetchProfile(input.getId(), true);
+            ProfileResult fetchResult = sessionService.fetchProfile(input.id(), true);
             if(fetchResult != null)
                 return fetchResult.profile();
         }
@@ -96,7 +99,7 @@ public class PlayerRenderer {
 
     private static String fetchPlayerName(UUID player){
         try{
-            InputStream inputStream = new URL("https://api.mojang.com/user/profile/" + player).openStream();
+            InputStream inputStream = java.net.URI.create("https://api.mojang.com/user/profile/" + player).toURL().openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             StringBuilder builder = new StringBuilder();
             String s;
@@ -114,6 +117,6 @@ public class PlayerRenderer {
     }
 
     private static MinecraftSessionService getSessionService(){
-        return ClientUtils.getMinecraft().getMinecraftSessionService();
+        return ClientUtils.getMinecraft().services().sessionService();
     }
 }
